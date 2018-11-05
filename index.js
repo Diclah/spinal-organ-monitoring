@@ -6,8 +6,10 @@ var spinalCore = require("spinal-core-connectorjs");
 
 var config = require("./config");
 var spinalgraph = require("spinalgraph");
+var colors = require('colors');
 
-const connect_opt = `http://${config.spinalConnector.user}:${
+const connect_opt =
+  `http://${config.spinalConnector.user}:${
   config.spinalConnector.password
 }@${config.spinalConnector.host}:${config.spinalConnector.port}/`;
 
@@ -29,44 +31,73 @@ let wait_for_endround_loop = (_file, defer) => {
 
 spinalCore.load(conn, config.file.path, _file => {
   wait_for_endround(_file).then(async () => {
-      try {
-        _file.graph.getContext(config.appName).then(async networkContext => {
+    try {
+      _file.graph.getContext(config.appName).then(async networkContext => {
 
-          if(typeof networkContext !== "undefined") {
-            var allDevices = await networkContext.getChildren(["hasDevice"]);
-            for(var i = 0; i < allDevices.length; i++) {
-              await monitorDevice(allDevices[i]);
-            }
-
+        if (typeof networkContext !== "undefined") {
+          var allDevices = await networkContext.getChildren([
+            "hasDevice"
+          ]);
+          for (var i = 0; i < allDevices.length; i++) {
+            await displayDevice(allDevices[i]);
           }
-        })
-      } catch (error) {
-        console.log(error);
-      }
+
+        }
+      })
+    } catch (error) {
+      console.log(error);
+    }
   });
 });
 
 
+// let monitorDevice = async (device) => {
 
 
-let monitorDevice = async (device) => {
-  var endpoints = await device.getChildren(["hasEndpoint"]);
-  for (let i = 0; i < endpoints.length; i++) {
-    let element = await endpoints[i].getElement();
-    element.currentValue.bind(() => {
-      console.log(`${element.name.get()} has changed, its current value is ${element.currentValue.get()}`);
-    })
-    
+//   for (let i = 0; i < endpoints.length; i++) {
+//     let element = await endpoints[i].getElement();
+//     element.currentValue.bind(() => {
+//       console.log(
+//         `${element.name.get()} has changed, its current value is ${element.currentValue.get()}`
+//       );
+//     })
+
+//   }
+
+// }
+
+
+let displayDevice = async (deviceNode) => {
+  var deviceElement = await deviceNode.getElement();
+
+  var endpoints = await deviceNode.getChildren(["hasEndpoint"]);
+
+  for (var i = 0; i < endpoints.length; i++) {
+    await displayEndpoint(endpoints[i], deviceElement);
   }
 
 }
 
-
+let displayEndpoint = async (endpointNode, deviceElement) => {
+  var element = await endpointNode.getElement();
+  element.currentValue.bind(() => {
+    // var value = element.currentValue.get();
+    console.log(
+      `
+      Endpoint Name : ${colors.green(element.name.get())}
+      path: ${colors.green(element.path.get())}
+      value : ${colors.green(element.currentValue.get())}
+      unit: ${colors.green(element.unit.get())}
+      Parent : ${colors.green(deviceElement.name.get())}
+    `
+    )
+  })
+}
 
 
 let getChildren = async (networkNode, relationName) => {
-    var deviceNodes = await networkNode.getChildren([relationName]);
-    return deviceNodes;
+  var deviceNodes = await networkNode.getChildren([relationName]);
+  return deviceNodes;
 }
 
 
