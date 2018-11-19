@@ -1,6 +1,3 @@
-let organType = typeof window === "undefined" ? global : window;
-
-var Q = require("q");
 
 var spinalCore = require("spinal-core-connectorjs");
 
@@ -14,20 +11,6 @@ const connect_opt =
 }@${config.spinalConnector.host}:${config.spinalConnector.port}/`;
 
 var conn = spinalCore.connect(connect_opt);
-
-let wait_for_endround = file => {
-  let deferred = Q.defer();
-  return wait_for_endround_loop(file, deferred);
-};
-
-let wait_for_endround_loop = (_file, defer) => {
-  if (organType.FileSystem._sig_server === false) {
-    setTimeout(() => {
-      defer.resolve(wait_for_endround_loop(_file, defer));
-    }, 100);
-  } else defer.resolve(_file);
-  return defer.promise;
-};
 
 
 spinalCore.load(conn, config.file.path , _file => {
