@@ -29,9 +29,9 @@ let wait_for_endround_loop = (_file, defer) => {
   return defer.promise;
 };
 
-spinalCore.load(conn, config.file.path, _file => {
-  wait_for_endround(_file).then(async () => {
-    try {
+
+spinalCore.load(conn, config.file.path , _file => {
+
       _file.graph.getContext(config.appName).then(async networkContext => {
 
         if (typeof networkContext !== "undefined") {
@@ -39,32 +39,17 @@ spinalCore.load(conn, config.file.path, _file => {
             "hasDevice"
           ]);
           for (var i = 0; i < allDevices.length; i++) {
-            await displayDevice(allDevices[i]);
+            displayDevice(allDevices[i]);
           }
 
         }
       })
-    } catch (error) {
-      console.log(error);
-    }
-  });
+
+}, () => {
+  console.log(`
+  ${config.appName} file does not exist in location ${config.file.path}`)
 });
 
-
-// let monitorDevice = async (device) => {
-
-
-//   for (let i = 0; i < endpoints.length; i++) {
-//     let element = await endpoints[i].getElement();
-//     element.currentValue.bind(() => {
-//       console.log(
-//         `${element.name.get()} has changed, its current value is ${element.currentValue.get()}`
-//       );
-//     })
-
-//   }
-
-// }
 
 
 let displayDevice = async (deviceNode) => {
